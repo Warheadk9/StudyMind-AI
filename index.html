@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyMind AI — Your Personal Tutor</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06080f;
+  --bg2: #0d1120;
+  --surface: #111827;
+  --surface2: #161f30;
+  --surface3: #1e2b42;
+  --accent: #4fffb0;
+  --accent2: #3b82f6;
+  --accent3: #f59e0b;
+  --danger: #ef4444;
+  --text: #e8edf8;
+  --muted: #5a6a88;
+  --muted2: #8899bb;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --radius: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* BG MESH */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 10%, rgba(79,255,176,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 90% 90%, rgba(59,130,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(245,158,11,0.02) 0%, transparent 70%);
+}
+
+/* ===== AUTH PAGES ===== */
+#authPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 40px 36px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.5s ease;
+}
+
+.auth-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.auth-logo span { color: var(--accent); }
+.auth-tagline { text-align:center; color: var(--muted2); font-size:0.88rem; margin-bottom: 32px; }
+
+.auth-tabs {
+  display: flex;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 28px;
+}
+.auth-tab {
+  flex:1; padding: 9px;
+  border:none; background:transparent;
+  color: var(--muted2); font-family: 'Instrument Sans',sans-serif;
+  font-size:0.9rem; font-weight:500; cursor:pointer;
+  border-radius:8px; transition:all 0.2s;
+}
+.auth-tab.active { background:var(--surface3); color:var(--text); }
+
+.field { margin-bottom: 16px; }
+.field label { display:block; font-size:0.82rem; font-weight:600; color:var(--muted2); margin-bottom:7px; letter-spacing:0.3px; text-transform:uppercase; }
+.field input {
+  width:100%; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:10px; padding:12px 14px; color:var(--text);
+  font-family:'Instrument Sans',sans-serif; font-size:0.95rem; outline:none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: rgba(79,255,176,0.4); }
+.field input::placeholder { color: var(--muted); }
+
+.auth-btn {
+  width:100%; padding:13px;
+  background: linear-gradient(135deg, var(--accent), #00d97e);
+  color: #06080f; font-family:'Instrument Sans',sans-serif;
+  font-size:1rem; font-weight:700; border:none; border-radius:10px;
+  cursor:pointer; margin-top:4px; transition:all 0.2s;
+}
+.auth-btn:hover { transform:translateY(-1px); box-shadow: 0 6px 24px rgba(79,255,176,0.3); }
+.auth-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+.auth-error {
+  background: rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);
+  color:#fca5a5; border-radius:8px; padding:10px 14px;
+  font-size:0.85rem; margin-bottom:16px; display:none;
+}
+
+/* ===== MAIN APP ===== */
+#mainApp { display:none; position:relative; z-index:1; }
+
+/* TOP NAV */
+.topnav {
+  position: sticky; top:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 0 24px;
+  height: 62px;
+  background: rgba(6,8,15,0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; letter-spacing:-0.5px; }
+.nav-logo span { color:var(--accent); }
+
+.nav-right { display:flex; align-items:center; gap:12px; }
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:100px; padding:6px 14px 6px 8px;
+  font-size:0.85rem; color:var(--muted2);
+}
+.user-avatar {
+  width:26px; height:26px; border-radius:50%;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.7rem; font-weight:700; color:#06080f;
+}
+.signout-btn {
+  padding:7px 14px; background:transparent; border:1px solid var(--border2);
+  border-radius:8px; color:var(--muted2); font-family:'Instrument Sans',sans-serif;
+  font-size:0.82rem; cursor:pointer; transition:all 0.2s;
+}
+.signout-btn:hover { border-color:var(--danger); color:var(--danger); }
+
+/* LAYOUT */
+.app-body {
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 62px);
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 20px 12px;
+  position: sticky;
+  top: 62px;
+  height: calc(100vh - 62px);
+  overflow-y: auto;
+}
+
+.nav-section { margin-bottom: 24px; }
+.nav-section-title {
+  font-size:0.7rem; font-weight:700; color:var(--muted);
+  letter-spacing:1.2px; text-transform:uppercase;
+  padding: 0 10px; margin-bottom:8px;
+}
+
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  font-size:0.88rem; font-weight:500; color:var(--muted2);
+  cursor:pointer; transition:all 0.15s; margin-bottom:2px;
+}
+.nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+.nav-item.active { background:rgba(79,255,176,0.08); color:var(--accent); }
+.nav-item .ni { font-size:1rem; width:20px; text-align:center; }
+
+.stats-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:16px; margin-top:auto;
+}
+.stats-card h4 { font-size:0.75rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.stat-label { font-size:0.82rem; color:var(--muted2); }
+.stat-val { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; color:var(--accent); }
+
+/* MAIN */
+.main { padding:28px; overflow-y:auto; max-height:calc(100vh - 62px); }
+
+/* PANELS */
+.panel { display:none; animation: fadeUp 0.35s ease; }
+.panel.active { display:block; }
+
+/* Page headers */
+.page-header { margin-bottom:28px; }
+.page-header h1 { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-0.5px; margin-bottom:6px; }
+.page-header p { color:var(--muted2); font-size:0.9rem; }
+
+/* Cards */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:20px;
+}
+.card-title {
+  font-family:'Syne',sans-serif; font-size:1rem; font-weight:700;
+  margin-bottom:16px; display:flex; align-items:center; gap:8px;
+}
+
+/* Upload zone */
+.upload-zone {
+  border:2px dashed rgba(79,255,176,0.2);
+  border-radius:14px; padding:36px 24px;
+  text-align:center; cursor:pointer;
+  transition:all 0.2s; margin-bottom:16px;
+  background:rgba(79,255,176,0.02);
+}
+.upload-zone:hover { border-color:var(--accent); background:rgba(79,255,176,0.05); }
+.upload-zone .uz-icon { font-size:2rem; margin-bottom:10px; }
+.upload-zone h3 { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; margin-bottom:5px; }
+.upload-zone p { font-size:0.82rem; color:var(--muted2); }
+#fileInput { display:none; }
+
+/* Textarea */
+.notes-ta {
+  width:100%; min-height:140px; background:var(--surface2);
+  border:1px solid var(--border2); border-radius:10px;
+  padding:14px; color:var(--text);
+  font-family:'Instrument Sans',sans-serif; font-size:0.9rem;
+  line-height:1.6; resize:vertical; outline:none; transition:border-color 0.2s;
+}
+.notes-ta:focus { border-color:rgba(79,255,176,0.35); }
+.notes-ta::placeholder { color:var(--muted); }
+
+/* Subject selector */
+.subject-select {
+  display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;
+}
+.subj-chip {
+  padding:6px 14px; border-radius:100px;
+  border:1px solid var(--border2); background:transparent;
+  color:var(--muted2); font-family:'Instrument Sans',sans-serif;
+  font-size:0.82rem; font-weight:500; cursor:pointer; transition:all 0.15s;
+}
+.subj-chip:hover { border-color:var(--accent2); color:var(--accent2); }
+.subj-chip.active { background:rgba(59,130,246,0.15); border-color:var(--accent2); color:var(--accent2); }
+
+/* Action button */
+.act-btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:11px 24px; border-radius:10px; border:none;
+  font-family:'Instrument Sans',sans-serif; font-size:0.92rem;
+  font-weight:600; cursor:pointer; transition:all 0.2s;
+}
+.act-btn.green { background:linear-gradient(135deg,var(--accent),#00d97e); color:#06080f; }
+.act-btn.green:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(79,255,176,0.3); }
+.act-btn.blue { background:linear-gradient(135deg,var(--accent2),#6366f1); color:#fff; }
+.act-btn.blue:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(59,130,246,0.3); }
+.act-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
+
+/* Loading */
+.loader { display:none; text-align:center; padding:36px; }
+.loader.on { display:block; }
+.spin {
+  width:38px; height:38px; border:3px solid var(--border);
+  border-top-color:var(--accent); border-radius:50%;
+  animation:spin 0.75s linear infinite; margin:0 auto 14px;
+}
+.loader p { color:var(--muted2); font-size:0.88rem; }
+
+/* Output sections */
+.out-section {
+  background:var(--surface2); border-radius:12px; padding:18px;
+  margin-bottom:12px; border-left:3px solid var(--accent);
+}
+.out-section h4 { font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; color:var(--accent); margin-bottom:10px; }
+.out-section p, .out-section li { font-size:0.88rem; line-height:1.75; color:#b8c8e0; }
+.out-section ul { padding-left:16px; }
+.out-section li { margin-bottom:5px; }
+.out-section.gold { border-left-color:var(--accent3); }
+.out-section.gold h4 { color:var(--accent3); }
+.out-section.blue { border-left-color:var(--accent2); }
+.out-section.blue h4 { color:var(--accent2); }
+
+/* Quiz */
+.quiz-q {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:18px; margin-bottom:14px;
+}
+.q-num { font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+.q-text { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:600; margin-bottom:14px; line-height:1.5; }
+.opt {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+  margin-bottom:7px; cursor:pointer; font-size:0.87rem; transition:all 0.15s;
+}
+.opt:hover { border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.04); }
+.opt.correct { border-color:#10b981; background:rgba(16,185,129,0.1); color:#6ee7b7; }
+.opt.wrong { border-color:var(--danger); background:rgba(239,68,68,0.08); color:#fca5a5; }
+.opt-l {
+  width:24px; height:24px; border-radius:6px; flex-shrink:0;
+  background:var(--surface3); display:flex; align-items:center;
+  justify-content:center; font-size:0.75rem; font-weight:700;
+}
+.exp {
+  display:none; margin-top:12px; padding:12px;
+  background:rgba(124,58,237,0.08); border-left:3px solid #7c3aed;
+  border-radius:0 8px 8px 0; font-size:0.84rem; line-height:1.65; color:#c4b5fd;
+}
+.exp.on { display:block; }
+
+/* Score */
+.score-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(79,255,176,0.1); border:1px solid rgba(79,255,176,0.25);
+  color:var(--accent); border-radius:100px; padding:4px 14px;
+  font-size:0.8rem; font-weight:600; margin-bottom:16px;
+}
+
+/* Library grid */
+.lib-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;
+}
+.lib-card {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:18px 14px; cursor:pointer;
+  text-align:center; transition:all 0.2s;
+}
+.lib-card:hover { transform:translateY(-3px); border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.03); }
+.lib-card .lc-icon { font-size:1.8rem; margin-bottom:10px; }
+.lib-card .lc-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; margin-bottom:3px; }
+.lib-card .lc-sub { font-size:0.75rem; color:var(--muted2); }
+
+/* History */
+.history-item {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:16px 18px; margin-bottom:10px;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  transition:border-color 0.15s;
+}
+.history-item:hover { border-color:var(--border2); }
+.hi-meta { font-size:0.75rem; color:var(--muted); margin-top:4px; }
+.hi-type {
+  font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:100px;
+  text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;
+}
+.hi-type.lesson { background:rgba(79,255,176,0.1); color:var(--accent); }
+.hi-type.quiz { background:rgba(59,130,246,0.1); color:var(--accent2); }
+
+/* Dashboard */
+.dash-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:24px;
+}
+.dash-stat {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:20px;
+}
+.ds-icon { font-size:1.5rem; margin-bottom:10px; }
+.ds-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; line-height:1; margin-bottom:4px; }
+.ds-label { font-size:0.82rem; color:var(--muted2); }
+
+/* Progress bars */
+.prog-bar { height:6px; background:var(--surface3); border-radius:3px; overflow:hidden; margin-top:8px; }
+.prog-fill { height:100%; border-radius:3px; transition:width 0.8s ease; }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:999;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:12px; padding:14px 20px; font-size:0.88rem;
+  box-shadow:var(--shadow); animation:fadeUp 0.3s ease;
+  display:none;
+}
+.toast.on { display:flex; align-items:center; gap:10px; }
+
+/* Back button */
+.back-btn {
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:9px; padding:7px 16px; color:var(--muted2);
+  font-family:'Instrument Sans',sans-serif; font-size:0.85rem;
+  font-weight:500; cursor:pointer; transition:all 0.2s; margin-bottom:20px;
+}
+.back-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Textbook styles */
+.tb-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; margin-bottom:14px;
+  cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px;
+}
+.tb-card:hover { border-color:rgba(79,255,176,0.3); background:rgba(79,255,176,0.02); transform:translateY(-2px); }
+.tb-icon { font-size:2.2rem; flex-shrink:0; }
+.tb-info h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; margin-bottom:4px; }
+.tb-info p { font-size:0.82rem; color:var(--muted2); }
+.tb-meta { margin-left:auto; text-align:right; flex-shrink:0; }
+.tb-meta span { font-size:0.75rem; color:var(--muted); display:block; }
+.tb-badge { background:rgba(79,255,176,0.1); color:var(--accent); border-radius:6px; padding:3px 10px; font-size:0.72rem; font-weight:700; }
+
+/* Topic list */
+.topic-item {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:12px; padding:16px 18px; margin-bottom:10px;
+  cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:12px;
+}
+.topic-item:hover { border-color:rgba(59,130,246,0.4); background:rgba(59,130,246,0.04); }
+.topic-num { width:30px; height:30px; border-radius:8px; background:var(--surface3);
+  display:flex; align-items:center; justify-content:center; font-size:0.78rem;
+  font-weight:700; color:var(--muted2); flex-shrink:0; }
+.topic-name { font-size:0.9rem; font-weight:500; flex:1; }
+.topic-arrow { color:var(--muted); font-size:0.8rem; }
+
+/* Textbook reader */
+.tb-reader { line-height:1.85; font-size:0.92rem; color:#c8d8f0; }
+.tb-reader p { margin-bottom:16px; }
+.tb-word {
+  cursor:pointer; border-bottom:1px dashed rgba(79,255,176,0.3);
+  transition:all 0.15s; padding:1px 2px; border-radius:3px;
+}
+.tb-word:hover { background:rgba(79,255,176,0.1); border-bottom-color:var(--accent); color:var(--accent); }
+
+/* Word explanation popup */
+.word-popup {
+  position:fixed; z-index:500; max-width:320px; min-width:220px;
+  background:var(--surface); border:1px solid rgba(79,255,176,0.3);
+  border-radius:14px; padding:16px; box-shadow:0 8px 40px rgba(0,0,0,0.6);
+  display:none; animation:fadeUp 0.2s ease;
+}
+.word-popup.on { display:block; }
+.word-popup h4 { font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; color:var(--accent); margin-bottom:8px; }
+.word-popup p { font-size:0.83rem; line-height:1.6; color:#b8c8e0; }
+.word-popup .close-pop { position:absolute; top:10px; right:12px; cursor:pointer; color:var(--muted); font-size:0.8rem; }
+
+/* YouTube link */
+.yt-link {
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25);
+  color:#fca5a5; border-radius:8px; padding:7px 14px;
+  font-size:0.83rem; font-weight:600; text-decoration:none; cursor:pointer;
+  transition:all 0.2s; margin-top:10px;
+}
+.yt-link:hover { background:rgba(239,68,68,0.2); color:#fff; }
+
+/* Add textbook form */
+.add-tb-form { display:none; }
+.add-tb-form.on { display:block; }
+.topic-entry { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; }
+.topic-entry input { width:100%; margin-bottom:8px; }
+.topic-entry textarea { width:100%; min-height:120px; }
+
+/* Admin badge */
+.admin-tag { background:rgba(245,158,11,0.12); color:var(--accent3); border:1px solid rgba(245,158,11,0.25); border-radius:100px; padding:3px 10px; font-size:0.72rem; font-weight:700; margin-left:8px; }
+
+/* Responsive */
+@media(max-width:680px) {
+  .app-body { grid-template-columns:1fr; }
+  .sidebar { display:none; }
+  .main { padding:16px; }
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<!-- ===== AUTH PAGE ===== -->
+<div id="authPage">
+  <div class="auth-box">
+    <div class="auth-logo">Study<span>Mind</span> AI</div>
+    <div class="auth-tagline">Your personal AI tutor — free for every student 🇬🇭</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuth('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuth('signup')">Create Account</button>
+    </div>
+    <div class="auth-error" id="authError"></div>
+    <div id="loginForm">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    </div>
+    <div id="signupForm" style="display:none">
+      <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupEmail" placeholder="you@email.com"></div>
+      <div class="field"><label>Password</label><input type="password" id="signupPass" placeholder="Min 6 characters"></div>
+      <button class="auth-btn" id="signupBtn" onclick="doSignup()">Create Free Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="mainApp">
+  <nav class="topnav">
+    <div class="nav-logo">Study<span>Mind</span> AI</div>
+    <div class="nav-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="userInitial">?</div>
+        <span id="userName">Student</span>
+      </div>
+      <button class="signout-btn" onclick="doSignout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-section-title">Menu</div>
+        <div class="nav-item active" onclick="showPanel('dashboard')"><span class="ni">🏠</span> Dashboard</div>
+        <div class="nav-item" onclick="showPanel('learn')"><span class="ni">📖</span> Learn from Notes</div>
+        <div class="nav-item" onclick="showPanel('quiz')"><span class="ni">❓</span> Quiz Me</div>
+        <div class="nav-item" onclick="showPanel('library')"><span class="ni">📚</span> Textbook Library</div>
+        <div class="nav-item" onclick="showPanel('history')"><span class="ni">🕐</span> My History</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Quick Subjects</div>
+        <div class="nav-item" onclick="quickSubject('Mathematics')"><span class="ni">📐</span> Mathematics</div>
+        <div class="nav-item" onclick="quickSubject('Physics')"><span class="ni">⚛️</span> Physics</div>
+        <div class="nav-item" onclick="quickSubject('Chemistry')"><span class="ni">🧪</span> Chemistry</div>
+        <div class="nav-item" onclick="quickSubject('Biology')"><span class="ni">🧬</span> Biology</div>
+        <div class="nav-item" onclick="quickSubject('English')"><span class="ni">📖</span> English</div>
+        <div class="nav-item" onclick="quickSubject('History')"><span class="ni">🌍</span> History</div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="stats-card">
+          <h4>My Progress</h4>
+          <div class="stat-row"><span class="stat-label">Lessons</span><span class="stat-val" id="sidebarLessons">0</span></div>
+          <div class="stat-row"><span class="stat-label">Quizzes</span><span class="stat-val" id="sidebarQuizzes">0</span></div>
+          <div class="stat-row"><span class="stat-label">Best Score</span><span class="stat-val" id="sidebarBest">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main" style="flex:1;overflow-y:auto;height:100%">
+
+      <!-- DASHBOARD -->
+      <div id="panel-dashboard" class="panel active">
+        <div class="page-header">
+          <h1>Welcome back 👋</h1>
+          <p>Here's your study progress</p>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-stat">
+            <div class="ds-icon">📖</div>
+            <div class="ds-val" id="dashLessons">0</div>
+            <div class="ds-label">Lessons Completed</div>
+            <div class="prog-bar"><div class="prog-fill" id="progLessons" style="width:0%;background:var(--accent)"></div></div>
+          </div>
+          <div class="dash-stat">
+            <div class="ds-icon">❓</div>
+            <div class="ds-val" id="dashQuizzes">0</div>
+            <div class="ds-label">Quizzes Taken</div>
+            <div class="prog-bar"><div class="prog-fill" id="progQuizzes" style="width:0%;background:var(--accent2)"></div></div>
+          </div>
+          <div class="dash-stat">
+            <div class="ds-icon">🏆</div>
+            <div class="ds-val" id="dashBest">—</div>
+            <div class="ds-label">Best Quiz Score</div>
+            <div class="prog-bar"><div class="prog-fill" id="progBest" style="width:0%;background:var(--accent3)"></div></div>
+          </div>
+          <div class="dash-stat">
+            <div class="ds-icon">🔥</div>
+            <div class="ds-val" id="dashStreak">0</div>
+            <div class="ds-label">Day Streak</div>
+            <div class="prog-bar"><div class="prog-fill" id="progStreak" style="width:0%;background:#f97316"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🚀 Quick Start</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button class="act-btn green" onclick="showPanel('learn')">📖 Start Learning</button>
+            <button class="act-btn blue" onclick="showPanel('quiz')">❓ Take a Quiz</button>
+            <button class="act-btn" style="background:var(--surface3);color:var(--text)" onclick="showPanel('library')">📚 Browse Library</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Recent Activity</div>
+          <div id="dashRecent"><p style="color:var(--muted2);font-size:0.88rem">No activity yet. Start studying! 🎯</p></div>
+        </div>
+      </div>
+
+      <!-- LEARN + AI CHAT -->
+      <div id="panel-learn" class="panel">
+        <button class="back-btn" onclick="showPanel('dashboard')">← Back to Dashboard</button>
+        <div class="page-header">
+          <h1>🤖 AI Tutor</h1>
+          <p>Ask anything · Get a full lesson · Chat like a real teacher is with you</p>
+        </div>
+
+        <!-- Notes input card -->
+        <div class="card" id="learnInputCard">
+          <div class="card-title">📖 Teach From Notes</div>
+          <div class="upload-zone" onclick="document.getElementById('fileInput').click()" style="margin-bottom:12px">
+            <div class="uz-icon">📄</div>
+            <h3>Upload Notes / PDF</h3>
+            <p>PDF or TXT — AI reads every page and teaches topic by topic</p>
+            <input type="file" id="fileInput" accept=".txt,.pdf" onchange="handleFile(this)">
+            <span id="fileLabel" style="display:block;margin-top:8px;font-size:0.82rem;color:var(--accent);font-weight:600"></span>
+          </div>
+          <p style="text-align:center;color:var(--muted);font-size:0.82rem;margin:-4px 0 10px">— or paste notes directly —</p>
+          <textarea class="notes-ta" id="learnInput" placeholder="Paste notes here — AI will identify all topics and teach each one fully..." style="min-height:80px"></textarea>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button class="act-btn green" id="learnBtn" onclick="generateLesson()">🧠 Teach Me Topic by Topic</button>
+            <span style="font-size:0.78rem;color:var(--muted2)">AI finds all topics → teaches each one fully → adds YouTube links</span>
+          </div>
+        </div>
+        <div class="loader" id="learnLoader"><div class="spin"></div><p>AI is building your full lesson...</p></div>
+        <div id="learnOutput"></div>
+
+        <!-- AI Chat -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">💬 Ask Your AI Tutor Anything</div>
+          <p style="font-size:0.83rem;color:var(--muted2);margin-bottom:14px">Ask any question — quick answer or full explanation. "Who invented the light bulb?" or "Explain Newton's laws in detail"</p>
+          <div id="chatMessages" style="max-height:400px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:10px"></div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <textarea id="chatInput" placeholder="Ask me anything..." style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.9rem;outline:none;resize:none;min-height:44px;max-height:120px" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+            <button class="act-btn green" onclick="sendChat()" style="height:44px;padding:0 18px;flex-shrink:0">Send ↑</button>
+          </div>
+          <div id="chatTyping" style="display:none;margin-top:8px;color:var(--muted2);font-size:0.82rem">🤖 AI is thinking...</div>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div id="panel-quiz" class="panel">
+        <button class="back-btn" onclick="showPanel('dashboard')">← Back to Dashboard</button>
+        <div class="page-header">
+          <h1>❓ Quiz Yourself</h1>
+          <p>Generate questions with deep explanations from any topic</p>
+        </div>
+        <div class="card">
+          <textarea class="notes-ta" id="quizInput" placeholder="Enter topic or paste notes... e.g. 'The French Revolution: causes, key events, and aftermath'"></textarea>
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button class="act-btn blue" id="quizBtn" onclick="generateQuiz()">⚡ Generate Quiz</button>
+            <div style="display:flex;gap:6px">
+              <button class="subj-chip active" onclick="setDifficulty(this,'easy')">Easy</button>
+              <button class="subj-chip" onclick="setDifficulty(this,'medium')">Medium</button>
+              <button class="subj-chip" onclick="setDifficulty(this,'hard')">Hard</button>
+            </div>
+          </div>
+        </div>
+        <div class="loader" id="quizLoader"><div class="spin"></div><p>Generating questions with deep explanations...</p></div>
+        <div id="quizOutput"></div>
+        <div id="quizScore" style="display:none" class="card">
+          <div class="card-title">🏆 Quiz Complete!</div>
+          <div id="scoreDisplay"></div>
+          <button class="act-btn blue" style="margin-top:12px" onclick="generateQuiz()">Try Again</button>
+        </div>
+      </div>
+
+      <!-- LIBRARY — STUDENT VIEW -->
+      <div id="panel-library" class="panel">
+
+        <!-- STUDENT: Textbook shelf -->
+        <div id="lib-view-list">
+          <button class="back-btn" onclick="showPanel('dashboard')">← Back to Dashboard</button>
+          <div class="page-header">
+            <h1>📚 Textbook Library</h1>
+            <p>Pick a textbook — AI teaches every topic like a real teacher</p>
+          </div>
+          <div id="textbookList"><div class="loader on" style="padding:30px"><div class="spin"></div><p>Loading textbooks...</p></div></div>
+        </div>
+
+        <!-- STUDENT: Strands / Table of Contents -->
+        <div id="lib-view-topics" style="display:none">
+          <button class="back-btn" onclick="libBack('list')">← Back to Library</button>
+          <div id="tbCoverCard"></div>
+          <div class="page-header" style="margin-top:8px">
+            <h1 id="tbViewTitle"></h1>
+            <p id="tbViewSubject" style="color:var(--muted2)"></p>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">📋 Strands — Table of Contents</div>
+            <p style="font-size:0.83rem;color:var(--muted2);margin-bottom:14px">Select any topic to read and have the AI teach it to you</p>
+            <div id="topicList"></div>
+          </div>
+        </div>
+
+        <!-- STUDENT: Topic reader + AI full lesson -->
+        <div id="lib-view-reader" style="display:none">
+          <button class="back-btn" onclick="libBack('topics')">← Back to Topics</button>
+          <div class="page-header">
+            <h1 id="readerTopicTitle"></h1>
+            <p style="color:var(--muted2);font-size:0.85rem">📖 Read · Tap any word for meaning · Let AI teach you</p>
+          </div>
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+              <div class="card-title" style="margin:0">📖 Textbook Content</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="act-btn" id="readAloudBtn" onclick="toggleReadAloud()" style="background:var(--surface3);color:var(--text);padding:7px 14px;font-size:0.82rem">🔊 Read Aloud</button>
+                <button class="act-btn" id="stopReadBtn" onclick="stopReadAloud()" style="display:none;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);padding:7px 14px;font-size:0.82rem">⏹ Stop</button>
+              </div>
+            </div>
+            <p style="font-size:0.78rem;color:var(--muted2);margin-bottom:12px">💡 Select any text then tap <strong style="color:var(--accent)">Explain This</strong> for a deeper breakdown</p>
+            <div class="tb-reader" id="readerContent"></div>
+            <div id="readerYT" style="margin-top:14px"></div>
+          </div>
+          <!-- Floating explain button for selected text -->
+          <div id="explainSelectionBtn" style="display:none;position:fixed;z-index:400;background:var(--accent);color:#000;border-radius:8px;padding:7px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(79,255,176,0.4)" onclick="explainSelection()">✨ Explain This</div>
+          <div class="card">
+            <div class="card-title">🎓 AI Teacher</div>
+            <p style="font-size:0.85rem;color:var(--muted2);margin-bottom:14px">AI teaches this topic with simple explanation, deep dive, worked examples, classwork and homework.</p>
+            <button class="act-btn green" id="aiTeachBtn" onclick="aiTeachTopic()">🧠 Teach Me This Topic</button>
+            <div class="loader" id="aiTeachLoader" style="padding:20px;display:none"><div class="spin"></div><p>AI teacher preparing your full lesson...</p></div>
+            <div id="aiTeachOutput" style="margin-top:16px"></div>
+          </div>
+          <div id="quizTopicWrap" style="display:none;margin-top:4px">
+            <button class="act-btn blue" onclick="quizCurrentTopic()">❓ Quiz Me on This Topic</button>
+          </div>
+        </div>
+
+        <div id="libOutput"></div>
+      </div>
+
+
+      <!-- Word popup -->
+      <div class="word-popup" id="wordPopup" style="display:none;position:fixed;z-index:500;max-width:320px;min-width:220px">
+        <span class="close-pop" onclick="closeWordPopup()">✕</span>
+        <h4 id="popupWord"></h4>
+        <p id="popupDef">Loading...</p>
+      </div>
+
+      <!-- HISTORY -->
+      <div id="panel-history" class="panel">
+        <button class="back-btn" onclick="showPanel('dashboard')">← Back to Dashboard</button>
+        <div class="page-header">
+          <h1>🕐 Study History</h1>
+          <p>All your lessons and quiz results saved here</p>
+        </div>
+        <div id="historyList"><div class="card"><p style="color:var(--muted2);font-size:0.88rem">No history yet — start studying to see your activity here! 🎯</p></div></div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /app-body -->
+</div><!-- /mainApp -->
+
+<!-- ADMIN PANEL — fullscreen overlay shown when admin logs in -->
+      <div id="adminPanel" style="display:none;position:fixed;inset:0;z-index:200;overflow:hidden;background:var(--bg)">
+        <nav class="topnav" style="position:sticky;top:0;z-index:300">
+          <div class="nav-logo">Study<span>Mind</span> <span style="color:var(--accent3);font-size:0.85rem;font-weight:700">ADMIN</span></div>
+          <div class="nav-right">
+            <div class="user-chip">
+              <div class="user-avatar" style="background:linear-gradient(135deg,var(--accent3),#f97316)">A</div>
+              <span id="adminUserName">Admin</span>
+            </div>
+            <button class="signout-btn" onclick="doSignout()">Sign Out</button>
+          </div>
+        </nav>
+        <div style="display:flex;height:calc(100vh - 62px);overflow:hidden">
+          <div class="sidebar" style="width:220px;flex-shrink:0;overflow-y:auto;height:100%">
+            <div class="nav-section">
+              <div class="nav-section-title">Admin Menu</div>
+              <div class="nav-item active" id="aNav-dashboard" onclick="adminShowView('dashboard')"><span class="ni">🏠</span> Dashboard</div>
+              <div class="nav-item" id="aNav-textbooks" onclick="adminShowView('textbooks')"><span class="ni">📚</span> Manage Textbooks</div>
+              <div class="nav-item" id="aNav-add" onclick="adminShowView('add')"><span class="ni">➕</span> Add Textbook</div>
+            </div>
+            <div style="margin-top:16px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px">
+              <div style="font-size:0.7rem;font-weight:700;color:var(--accent3);margin-bottom:5px">ADMIN MODE</div>
+              <div style="font-size:0.78rem;color:var(--muted2)">Only you can manage textbooks.</div>
+            </div>
+          </div>
+          <div class="main">
+            <div id="aPanel-dashboard" style="display:block">
+              <div class="page-header"><h1>👋 Admin Dashboard</h1><p>Manage all textbooks students see</p></div>
+              <div class="dash-grid">
+                <div class="dash-stat"><div class="ds-icon">📚</div><div class="ds-val" id="adminTbCount">—</div><div class="ds-label">Textbooks</div></div>
+                <div class="dash-stat"><div class="ds-icon">📋</div><div class="ds-val" id="adminTopicCount">—</div><div class="ds-label">Total Topics</div></div>
+              </div>
+              <div class="card">
+                <div class="card-title">⚡ Quick Actions</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button class="act-btn green" onclick="adminShowView('add')">➕ Add New Textbook</button>
+                  <button class="act-btn blue" onclick="adminShowView('textbooks')">📚 Manage Textbooks</button>
+                </div>
+              </div>
+            </div>
+            <div id="aPanel-textbooks" style="display:none">
+              <div class="page-header"><h1>📚 All Textbooks</h1><p>Click any textbook to edit or delete</p></div>
+              <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+                <button class="back-btn" style="margin-bottom:0" onclick="adminShowView('dashboard')">← Back to Dashboard</button>
+                <button class="act-btn green" onclick="adminShowView('add')">➕ Add New Textbook</button>
+              </div>
+              <div id="adminTbList"></div>
+            </div>
+            <div id="aPanel-add" style="display:none">
+              <button class="back-btn" onclick="adminShowView('textbooks')">← Back to Textbooks</button>
+              <div class="page-header"><h1 id="addTbHeading">➕ Add New Textbook</h1><p>Fill in details then add topics. Upload files or type content directly.</p></div>
+              <div class="card">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                  <div>
+                    <label style="font-size:0.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Textbook Title *</label>
+                    <input type="text" id="tbTitle" placeholder="e.g. Core Mathematics for SHS" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.9rem;outline:none">
+                  </div>
+                  <div>
+                    <label style="font-size:0.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Subject / Level *</label>
+                    <input type="text" id="tbSubject" placeholder="e.g. Mathematics · SHS Level 1" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.9rem;outline:none">
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:80px 1fr;gap:14px">
+                  <div>
+                    <label style="font-size:0.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Icon</label>
+                    <input type="text" id="tbIcon" placeholder="📐" maxlength="4" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:1.3rem;outline:none;text-align:center">
+                  </div>
+                  <div>
+                    <label style="font-size:0.78rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Description</label>
+                    <input type="text" id="tbDesc" placeholder="e.g. Complete SHS curriculum for WASSCE" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 13px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.9rem;outline:none">
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">📋 Topics / Strands</div>
+                <p style="font-size:0.83rem;color:var(--muted2);margin-bottom:14px">Add topics one by one. Type content OR upload a file (PDF/TXT) — AI reads and organizes it automatically.</p>
+                <div id="adminTopicsContainer"></div>
+                <button class="act-btn" style="background:var(--surface3);color:var(--text);margin-top:12px" onclick="adminAddTopicField()">+ Add Another Topic</button>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px">
+                <button class="act-btn green" onclick="adminSaveTextbook()">💾 Save Textbook</button>
+                <button class="act-btn" style="background:var(--surface3);color:var(--muted2)" onclick="adminCancelEdit()">Cancel</button>
+                <button class="act-btn" id="deleteTbBtn" style="display:none;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2)" onclick="adminDeleteTextbook()">🗑️ Delete This Textbook</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase + App Scripts -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ---- Firebase Config ----
+const firebaseConfig = {
+  apiKey: "AIzaSyBSMyuoHpFjZxSAfR5vytM4a6DW7xEG1No",
+  authDomain: "studymind-ai-b4a73.firebaseapp.com",
+  projectId: "studymind-ai-b4a73",
+  storageBucket: "studymind-ai-b4a73.firebasestorage.app",
+  messagingSenderId: "996574585330",
+  appId: "1:996574585330:web:0197cfda323d79754d8b6b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ---- Groq API ----
+const GROQ_KEY = "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";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+async function callGemini(prompt) {
+  const res = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + GROQ_KEY
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "API error " + res.status);
+  if (!data.choices || !data.choices[0]) throw new Error("Empty response from AI. Please try again.");
+  return data.choices[0].message.content;
+}
+
+// ---- State ----
+let currentUser = null;
+let userStats = { lessons: 0, quizzes: 0, bestScore: 0, streak: 0 };
+let quizDifficulty = 'easy';
+let quizAnswers = [];
+
+// ---- Auth ----
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    // Hide auth immediately
+    document.getElementById('authPage').style.display = 'none';
+    // Hide both panels first — routeUser decides which to show
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+    // Set user display name (needed by both panels)
+    const displayName = user.displayName || user.email.split('@')[0];
+    document.getElementById('userName').textContent = displayName;
+    document.getElementById('userInitial').textContent = displayName[0].toUpperCase();
+    await loadUserStats();
+    // Now route — admin sees admin panel, students see student app
+    routeUser();
+    if (!isAdmin()) renderDashboard();
+  } else {
+    document.getElementById('authPage').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+  }
+});
+
+window.switchAuth = (tab) => {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('authError').style.display = 'none';
+};
+
+window.doSignup = async () => {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPass').value;
+  const btn = document.getElementById('signupBtn');
+  const err = document.getElementById('authError');
+  if (!name || !email || !pass) { showAuthError('Please fill in all fields'); return; }
+  if (pass.length < 6) { showAuthError('Password must be at least 6 characters'); return; }
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await setDoc(doc(db, 'users', cred.user.uid, 'stats', 'main'), { lessons:0, quizzes:0, bestScore:0, streak:0, lastStudy: null });
+    showToast('🎉 Welcome to StudyMind AI!');
+  } catch (e) {
+    showAuthError(e.message.replace('Firebase: ',''));
+    btn.disabled = false; btn.textContent = 'Create Free Account →';
+  }
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    showToast('👋 Welcome back!');
+  } catch (e) {
+    showAuthError('Invalid email or password');
+    btn.disabled = false; btn.textContent = 'Sign In →';
+  }
+};
+
+window.doSignout = async () => {
+  await signOut(auth);
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authPage').style.display = 'flex';
+  // Reset login button
+  const btn = document.getElementById('loginBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Sign In →'; }
+};
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ---- Stats ----
+async function loadUserStats() {
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid, 'stats', 'main'));
+    if (snap.exists()) userStats = { ...userStats, ...snap.data() };
+  } catch(e) {}
+}
+
+async function saveStats() {
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid, 'stats', 'main'), userStats, { merge: true });
+  } catch(e) {}
+}
+
+async function saveHistory(type, title, score) {
+  try {
+    await addDoc(collection(db, 'users', currentUser.uid, 'history'), {
+      type, title, score: score || null,
+      createdAt: serverTimestamp()
+    });
+  } catch(e) {}
+}
+
+async function loadHistory() {
+  try {
+    const q = query(collection(db, 'users', currentUser.uid, 'history'), orderBy('createdAt','desc'), limit(20));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { return []; }
+}
+
+// ---- Dashboard ----
+function renderDashboard() {
+  document.getElementById('dashLessons').textContent = userStats.lessons;
+  document.getElementById('dashQuizzes').textContent = userStats.quizzes;
+  document.getElementById('dashBest').textContent = userStats.bestScore ? userStats.bestScore + '%' : '—';
+  document.getElementById('dashStreak').textContent = userStats.streak || 0;
+  document.getElementById('sidebarLessons').textContent = userStats.lessons;
+  document.getElementById('sidebarQuizzes').textContent = userStats.quizzes;
+  document.getElementById('sidebarBest').textContent = userStats.bestScore ? userStats.bestScore + '%' : '—';
+  document.getElementById('progLessons').style.width = Math.min(userStats.lessons * 10, 100) + '%';
+  document.getElementById('progQuizzes').style.width = Math.min(userStats.quizzes * 10, 100) + '%';
+  document.getElementById('progBest').style.width = (userStats.bestScore || 0) + '%';
+  document.getElementById('progStreak').style.width = Math.min((userStats.streak || 0) * 14, 100) + '%';
+  loadHistory().then(items => {
+    const el = document.getElementById('dashRecent');
+    if (!items.length) { el.innerHTML = '<p style="color:var(--muted2);font-size:0.88rem">No activity yet. Start studying! 🎯</p>'; return; }
+    el.innerHTML = items.slice(0,5).map(i => `
+      <div class="history-item">
+        <div>
+          <div style="font-size:0.9rem;font-weight:500">${i.title || 'Study session'}</div>
+          <div class="hi-meta">${i.type} · ${i.score ? i.score + '% score · ' : ''}${formatDate(i.createdAt)}</div>
+        </div>
+        <span class="hi-type ${i.type}">${i.type}</span>
+      </div>`).join('');
+  });
+}
+
+function formatDate(ts) {
+  if (!ts) return 'Just now';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+// ---- Navigation ----
+window.showPanel = (id) => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  const idx = { dashboard:0, learn:1, quiz:2, library:3, history:4 }[id];
+  document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  if (id === 'history') renderHistory();
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'library') {
+    libGo('list');
+    loadTextbookList();
+  }
+};
+
+window.quickSubject = (subj) => {
+  showPanel('library');
+  loadLibSubject(subj);
+};
+
+// ---- File Upload ----
+// Stores file data for PDF/image sending to Claude
+let uploadedFileData = null;
+let uploadedFileType = null;
+let uploadedFileName = null;
+
+window.handleFile = (input) => {
+  if (!input.files[0]) return;
+  const f = input.files[0];
+  uploadedFileName = f.name;
+
+  if (f.type === 'text/plain') {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedFileData = null;
+      uploadedFileType = 'text';
+      document.getElementById('learnInput').value = e.target.result;
+      document.getElementById('fileLabel').textContent = '📄 ' + f.name + ' (TXT — ready)';
+      showToast('📄 File loaded: ' + f.name);
+    };
+    reader.readAsText(f);
+  } else if (f.type === 'application/pdf') {
+    const reader = new FileReader();
+    reader.onload = e => {
+      // Store base64 without the data URL prefix
+      uploadedFileData = e.target.result.split(',')[1];
+      uploadedFileType = 'pdf';
+      document.getElementById('learnInput').value = '';
+      document.getElementById('learnInput').placeholder = 'PDF loaded — AI will read it directly. Click Teach Me!';
+      document.getElementById('fileLabel').textContent = '📄 ' + f.name + ' (PDF — ready to teach)';
+      showToast('📄 PDF loaded: ' + f.name);
+    };
+    reader.readAsDataURL(f);
+  } else {
+    showToast('⚠️ Use PDF or TXT files');
+  }
+};
+
+// ---- Generate Lesson ----
+window.generateLesson = async () => {
+  const notes = document.getElementById('learnInput').value.trim();
+  const hasPDF = uploadedFileType === 'pdf' && uploadedFileData;
+  const hasTxt = uploadedFileType === 'text' || (notes && !hasPDF);
+
+  if (!hasPDF && !notes) { showToast('⚠️ Upload a file or paste notes first!'); return; }
+
+  const btn = document.getElementById('learnBtn');
+  btn.disabled = true;
+  document.getElementById('learnLoader').classList.add('on');
+  document.getElementById('learnOutput').innerHTML = '';
+
+  try {
+    // STEP 1: Extract all topics from the document
+    document.getElementById('learnLoader').querySelector('p').textContent = 'Step 1/3: AI is reading your document and finding all topics...';
+
+    let topicListRaw;
+
+    if (hasPDF) {
+      // Use Anthropic Claude to read the PDF
+      const extractRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': '', 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5',
+          max_tokens: 2000,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: uploadedFileData } },
+              { type: 'text', text: 'Read this document carefully. List ALL the main topics and sub-topics covered in it. Return ONLY valid JSON (no markdown):\n{"documentTitle": "title of the document", "topics": [{"name": "Topic name", "subtopics": ["sub1", "sub2"]}, ...]}' }
+            ]
+          }]
+        })
+      });
+      const extractData = await extractRes.json();
+      topicListRaw = extractData.content?.[0]?.text || '{}';
+    } else {
+      // Use Groq for text
+      topicListRaw = await callGemini(`Read these notes carefully. List ALL main topics and sub-topics. Return ONLY valid JSON (no markdown, no backticks):\n{"documentTitle": "inferred title", "topics": [{"name": "Topic name", "subtopics": ["sub1","sub2"]}]}\n\nNOTES:\n${notes.substring(0,4000)}`);
+    }
+
+    let topicData;
+    try { topicData = JSON.parse(topicListRaw.replace(/```json|```/g,'').trim()); }
+    catch { topicData = { documentTitle: uploadedFileName || 'Your Notes', topics: [{ name: 'Main Topic', subtopics: [] }] }; }
+
+    const topics = topicData.topics || [];
+    const docTitle = topicData.documentTitle || uploadedFileName || 'Your Document';
+
+    if (!topics.length) { showToast('⚠️ Could not extract topics. Try pasting text directly.'); return; }
+
+    // STEP 2: Teach each topic fully + get YouTube links
+    document.getElementById('learnLoader').querySelector('p').textContent = `Step 2/3: Teaching ${topics.length} topics...`;
+
+    const taughtTopics = [];
+
+    for (let i = 0; i < topics.length; i++) {
+      const topic = topics[i];
+      document.getElementById('learnLoader').querySelector('p').textContent = `Teaching topic ${i+1} of ${topics.length}: ${topic.name}...`;
+
+      const ytQuery = encodeURIComponent(topic.name + ' ' + docTitle + ' lesson');
+      const ytLink = `https://www.youtube.com/results?search_query=${ytQuery}`;
+
+      const teachPrompt = `You are an expert teacher teaching "${topic.name}" as part of "${docTitle}".
+${topic.subtopics?.length ? 'Subtopics to cover: ' + topic.subtopics.join(', ') : ''}
+${hasTxt ? 'From these notes: ' + notes.substring(0,2000) : ''}
+
+Teach this topic FULLY and DEEPLY — like standing in front of a class. Every detail matters.
+Return ONLY valid JSON (no markdown, no backticks):
+{
+  "explanation": "Deep thorough explanation of EXACTLY what this topic is, how it works, all the mechanics, rules, formulas, and details. NOT just a definition — teach it fully. 6-10 sentences.",
+  "realWorldExample": "A concrete real-world example that makes this click immediately.",
+  "workedExample": "Complete step-by-step worked example with ALL working shown. Number every step.",
+  "workedExample2": "Second worked example, different scenario or harder. Full working.",
+  "keyFacts": ["Important fact/rule 1", "Fact 2", "Fact 3", "Fact 4", "Fact 5"],
+  "commonMistakes": ["Mistake students make + how to avoid", "Mistake 2 + fix"],
+  "classwork": ["Practice Q1", "Practice Q2", "Practice Q3"],
+  "classworkAnswers": ["Answer/workings for Q1", "Answer for Q2", "Answer for Q3"],
+  "examTip": "Specific exam tip for this exact topic"
+}
+Be THOROUGH. Teach the actual content, not just what the topic means. Return only valid JSON.`;
+
+      let taught;
+      try {
+        const raw = await callGemini(teachPrompt);
+        taught = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      } catch(e) {
+        taught = { explanation: 'Could not generate lesson for this topic.', keyFacts: [], classwork: [], workedExample: '' };
+      }
+
+      taughtTopics.push({ name: topic.name, subtopics: topic.subtopics || [], ytLink, ...taught });
+    }
+
+    // STEP 3: Render everything
+    document.getElementById('learnLoader').querySelector('p').textContent = 'Step 3/3: Building your lesson...';
+    renderTopicByTopicLesson(docTitle, taughtTopics);
+
+    chatContext = 'Student is studying: ' + docTitle + '. Topics: ' + topics.map(t=>t.name).join(', ');
+    userStats.lessons++;
+    await saveStats();
+    await saveHistory('lesson', docTitle);
+    renderDashboard();
+    showToast('✅ Full topic-by-topic lesson ready!');
+
+  } catch(e) {
+    document.getElementById('learnOutput').innerHTML = '<div class="card"><p style="color:var(--danger)">⚠️ Error: ' + e.message + '</p></div>';
+    console.error(e);
+  }
+
+  document.getElementById('learnLoader').classList.remove('on');
+  document.getElementById('learnLoader').querySelector('p').textContent = 'AI is building your full lesson...';
+  btn.disabled = false;
+};
+
+function renderTopicByTopicLesson(docTitle, topics) {
+  const out = document.getElementById('learnOutput');
+
+  // Build topic nav bar
+  const navHtml = topics.map((t,i) =>
+    `<button onclick="document.getElementById('topic-${i}').scrollIntoView({behavior:'smooth'})" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;color:var(--muted2);font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0">${i+1}. ${t.name}</button>`
+  ).join('');
+
+  let html = `
+    <div class="score-pill">📚 ${docTitle} — ${topics.length} Topics</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;flex-wrap:nowrap">${navHtml}</div>
+  `;
+
+  topics.forEach((t, i) => {
+    const cwId = 'cw-' + i;
+    const cwAnsId = 'cwa-' + i;
+
+    let topicHtml = `
+      <div id="topic-${i}" class="card" style="margin-bottom:20px;scroll-margin-top:80px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">TOPIC ${i+1} OF ${topics.length}</div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin:0">${t.name}</h2>
+            ${t.subtopics?.length ? `<p style="font-size:0.78rem;color:var(--muted2);margin-top:4px">Covers: ${t.subtopics.join(' · ')}</p>` : ''}
+          </div>
+          <a href="${t.ytLink}" target="_blank" class="yt-link" style="flex-shrink:0">▶ Watch on YouTube</a>
+        </div>
+    `;
+
+    if (t.explanation) topicHtml += `<div class="out-section blue"><h4>📖 Full Explanation</h4><p style="line-height:1.9">${t.explanation}</p></div>`;
+    if (t.realWorldExample) topicHtml += `<div class="out-section" style="border-left-color:#06b6d4"><h4 style="color:#06b6d4">🌍 Real World Example</h4><p style="line-height:1.85">${t.realWorldExample}</p></div>`;
+    if (t.workedExample) topicHtml += `<div class="out-section gold"><h4>✏️ Worked Example 1</h4><p style="white-space:pre-line;line-height:2;font-size:0.88rem">${t.workedExample}</p></div>`;
+    if (t.workedExample2) topicHtml += `<div class="out-section gold"><h4>✏️ Worked Example 2</h4><p style="white-space:pre-line;line-height:2;font-size:0.88rem">${t.workedExample2}</p></div>`;
+    if (t.keyFacts?.length) topicHtml += `<div class="out-section"><h4>⚡ Key Facts & Rules</h4><ul style="line-height:2">${t.keyFacts.map(f=>`<li>✅ ${f}</li>`).join('')}</ul></div>`;
+    if (t.commonMistakes?.length) topicHtml += `<div class="out-section" style="border-left-color:#ef4444"><h4 style="color:#ef4444">⚠️ Common Mistakes</h4><ul style="line-height:2">${t.commonMistakes.map(m=>`<li>${m}</li>`).join('')}</ul></div>`;
+    if (t.examTip) topicHtml += `<div class="out-section gold"><h4>🎯 Exam Tip</h4><p>${t.examTip}</p></div>`;
+
+    if (t.classwork?.length) {
+      const ansHtml = t.classworkAnswers?.length
+        ? `<div id="${cwAnsId}" style="display:none;margin-top:12px;background:var(--surface3);border-radius:10px;padding:12px"><div style="font-size:0.78rem;font-weight:700;color:#10b981;margin-bottom:8px">ANSWERS</div><ol style="padding-left:16px;line-height:2">${t.classworkAnswers.map(a=>`<li style="margin-bottom:4px">${a}</li>`).join('')}</ol></div>` : '';
+      const showAnsBtn = t.classworkAnswers?.length
+        ? `<button class="act-btn" id="${cwId}btn" style="margin-top:10px;background:var(--surface3);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:6px 14px;font-size:0.8rem" onclick="const e=document.getElementById('${cwAnsId}');const b=document.getElementById('${cwId}btn');e.style.display=e.style.display==='none'?'block':'none';b.textContent=e.style.display==='block'?'Hide Answers':'Show Answers'">Show Answers</button>` : '';
+      topicHtml += `<div class="out-section" style="border-left-color:#10b981"><h4 style="color:#10b981">📝 Practice Questions</h4><ol style="padding-left:16px;line-height:2">${t.classwork.map(q=>`<li style="margin-bottom:8px">${q}</li>`).join('')}</ol>${ansHtml}${showAnsBtn}</div>`;
+    }
+
+    topicHtml += `
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="act-btn blue" onclick="quizFromLesson('${t.name.replace(/'/g,"\\'")}')">❓ Quiz Me on This</button>
+          ${i < topics.length - 1 ? `<button class="act-btn" style="background:var(--surface3);color:var(--text)" onclick="document.getElementById('topic-'+(i+1)).scrollIntoView({behavior:'smooth'})" >Next Topic →</button>` : ''}
+        </div>
+      </div>`;
+
+    html += topicHtml;
+  });
+
+  out.innerHTML = html;
+}
+
+function renderLesson(lesson) {
+  const out = document.getElementById('learnOutput');
+  let html = '';
+  if (lesson.hook) html += `<div class="out-section" style="border-left-color:#f59e0b"><h4 style="color:#f59e0b">🔥 Why This Matters</h4><p style="line-height:1.85">${lesson.hook}</p></div>`;
+  if (lesson.simpleExplanation) html += `<div class="out-section"><h4>🟢 Simple Explanation</h4><p style="line-height:1.85">${lesson.simpleExplanation}</p></div>`;
+  if (lesson.deepDive) html += `<div class="out-section blue"><h4>🔵 Deep Dive</h4><p style="line-height:1.85">${lesson.deepDive}</p></div>`;
+  (lesson.sections||[]).forEach(s => { html += `<div class="out-section blue"><h4>📍 ${s.heading}</h4><p style="line-height:1.85">${s.content}</p></div>`; });
+  if (lesson.visualNote) html += `<div class="out-section" style="border-left-color:#06b6d4"><h4 style="color:#06b6d4">🖼️ Picture This</h4><p style="line-height:1.85;font-style:italic">${lesson.visualNote}</p></div>`;
+  if (lesson.workedExample) html += `<div class="out-section gold"><h4>✏️ Worked Example 1</h4><p style="white-space:pre-line;line-height:2;font-size:0.88rem">${lesson.workedExample}</p></div>`;
+  if (lesson.workedExample2) html += `<div class="out-section gold"><h4>✏️ Worked Example 2</h4><p style="white-space:pre-line;line-height:2;font-size:0.88rem">${lesson.workedExample2}</p></div>`;
+  if (lesson.teacherTip) html += `<div class="out-section" style="border-left-color:#a78bfa"><h4 style="color:#a78bfa">🤫 Teacher's Secret Tip</h4><p style="line-height:1.85">${lesson.teacherTip}</p></div>`;
+  if (lesson.commonMistakes?.length) html += `<div class="out-section" style="border-left-color:#ef4444"><h4 style="color:#ef4444">⚠️ Common Mistakes</h4><ul style="line-height:2">${lesson.commonMistakes.map(m=>`<li>${m}</li>`).join('')}</ul></div>`;
+  if (lesson.keyPoints?.length) html += `<div class="out-section"><h4>⚡ Key Points</h4><ul style="line-height:2">${lesson.keyPoints.map(p=>`<li>✅ ${p}</li>`).join('')}</ul></div>`;
+  if (lesson.examTip) html += `<div class="out-section gold"><h4>🎯 Exam Strategy</h4><p style="line-height:1.85">${lesson.examTip}</p></div>`;
+  if (lesson.classwork?.length) {
+    const ans = lesson.classworkAnswers?.length ? `<div id="cwAns" style="display:none;margin-top:12px;background:var(--surface3);border-radius:10px;padding:12px"><ol style="padding-left:16px;line-height:2">${lesson.classworkAnswers.map(a=>`<li>${a}</li>`).join('')}</ol></div>` : '';
+    html += `<div class="out-section" style="border-left-color:#10b981"><h4 style="color:#10b981">📝 Classwork</h4><ol style="padding-left:16px;line-height:2">${lesson.classwork.map(q=>`<li style="margin-bottom:8px">${q}</li>`).join('')}</ol>${ans}${ans?`<button class="act-btn" style="margin-top:10px;background:var(--surface3);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:6px 14px;font-size:0.8rem" onclick="const e=document.getElementById('cwAns');e.style.display=e.style.display==='none'?'block':'none';this.textContent=e.style.display==='block'?'Hide Answers':'Show Answers'">Show Answers</button>`:''}</div>`;
+  }
+  if (lesson.homework?.length) html += `<div class="out-section" style="border-left-color:#8b5cf6"><h4 style="color:#8b5cf6">📚 Homework</h4><ol style="padding-left:16px;line-height:2">${lesson.homework.map(q=>`<li style="margin-bottom:8px">${q}</li>`).join('')}</ol></div>`;
+  if (lesson.summary) html += `<div class="out-section" style="border-left-color:#4fffb0"><h4 style="color:var(--accent)">🎓 Lesson Summary</h4><p style="line-height:1.85">${lesson.summary}</p></div>`;
+  if (lesson.funFact) html += `<div class="out-section" style="border-left-color:#ec4899"><h4 style="color:#ec4899">💡 Fun Fact</h4><p style="line-height:1.85">${lesson.funFact}</p></div>`;
+  const titleSafe = (lesson.title||'this topic').replace(/'/g,"\\'");
+  html += `<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap"><button class="act-btn blue" onclick="quizFromLesson('${titleSafe}')">❓ Quiz Me On This</button></div>`;
+  out.innerHTML = `<div class="score-pill">✅ Full Lesson: ${lesson.title||'Complete'}</div><div class="card">${html}</div>`;
+}
+
+window.quizFromLesson = (title) => {
+  document.getElementById('quizInput').value = title;
+  showPanel('quiz');
+  generateQuiz();
+};
+
+// ---- AI Chat ----
+let chatHistory = [];
+let chatContext = '';
+
+window.sendChat = async () => {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendChatMsg('user', msg);
+  document.getElementById('chatTyping').style.display = 'block';
+  const systemPrompt = `You are an expert AI tutor. Answer student questions helpfully.\n- Simple factual questions (who/what/when/where): SHORT answer, 1-3 sentences.\n- Concept questions: clear explanation with an example.\n- "Explain fully" or "teach me": give a comprehensive detailed lesson.\n- Always be warm, encouraging, use simple language and analogies.${chatContext ? '\nContext: ' + chatContext : ''}`;
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer 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' },
+      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: systemPrompt }, ...chatHistory.slice(-10), { role: 'user', content: msg }], temperature: 0.75, max_tokens: 2000 })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'Sorry, try again.';
+    chatHistory.push({ role: 'user', content: msg });
+    chatHistory.push({ role: 'assistant', content: reply });
+    appendChatMsg('ai', reply);
+  } catch(e) { appendChatMsg('ai', '⚠️ ' + e.message); }
+  document.getElementById('chatTyping').style.display = 'none';
+};
+
+function appendChatMsg(role, text) {
+  const c = document.getElementById('chatMessages');
+  if (!c) return;
+  const d = document.createElement('div');
+  d.style.cssText = role === 'user'
+    ? 'align-self:flex-end;background:var(--accent2);color:#fff;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:80%;font-size:0.88rem;line-height:1.6'
+    : 'align-self:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:12px 14px;max-width:90%;font-size:0.88rem;line-height:1.7';
+  if (role === 'ai') { d.innerHTML = text.replace(/\n/g,'<br>'); } else { d.textContent = text; }
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+// ---- Quiz ----
+window.setDifficulty = (el, diff) => {
+  document.querySelectorAll('.subj-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  quizDifficulty = diff;
+};
+
+window.generateQuiz = async () => {
+  const notes = document.getElementById('quizInput').value.trim();
+  if (!notes) { showToast('⚠️ Enter a topic or notes first!'); return; }
+  const btn = document.getElementById('quizBtn');
+  btn.disabled = true;
+  document.getElementById('quizLoader').classList.add('on');
+  document.getElementById('quizOutput').innerHTML = '';
+  document.getElementById('quizScore').style.display = 'none';
+  quizAnswers = [];
+
+  try {
+    const numQ = { easy: 4, medium: 6, hard: 8 }[quizDifficulty] || 4;
+    const prompt = `You are a ${quizDifficulty} difficulty quiz generator for ${quizDifficulty === 'hard' ? 'advanced' : 'high school'} students.
+
+Topic/Notes: ${notes.substring(0, 2000)}
+
+Generate ${numQ} ${quizDifficulty} multiple choice questions.
+
+Respond ONLY with valid JSON (no markdown, no backticks):
+{
+  "questions": [
+    {
+      "question": "Clear question text?",
+      "options": ["Option A text", "Option B text", "Option C text", "Option D text"],
+      "answer": 0,
+      "explanation": "Detailed 3-4 sentence explanation of why the correct answer is right and why the others are wrong. Include relevant concepts."
+    }
+  ]
+}
+The answer field is the 0-based index of the correct option. Return only valid JSON.`;
+
+    const raw = await callGemini(prompt);
+    let quiz;
+    try { quiz = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch { quiz = { questions: [] }; }
+
+    if (!quiz.questions?.length) throw new Error('No questions generated');
+    renderQuiz(quiz.questions);
+    userStats.quizzes++;
+    await saveStats();
+    showToast(`⚡ ${quiz.questions.length} questions generated!`);
+  } catch(e) {
+    document.getElementById('quizOutput').innerHTML = `<div class="card"><p style="color:var(--danger)">⚠️ ${e.message}</p></div>`;
+  }
+
+  document.getElementById('quizLoader').classList.remove('on');
+  btn.disabled = false;
+};
+
+let quizTotal = 0;
+let quizCorrect = 0;
+
+function renderQuiz(questions) {
+  quizTotal = questions.length; quizCorrect = 0;
+  const letters = ['A','B','C','D'];
+  let html = `<div class="score-pill">⚡ ${questions.length} Questions · ${quizDifficulty.charAt(0).toUpperCase()+quizDifficulty.slice(1)}</div>`;
+  questions.forEach((q, qi) => {
+    html += `<div class="quiz-q" id="qq-${qi}">
+      <div class="q-num">Question ${qi+1} of ${questions.length}</div>
+      <div class="q-text">${q.question}</div>
+      ${q.options.map((o,oi) => `<div class="opt" onclick="selectOpt(this,${qi},${oi},${q.answer})"><span class="opt-l">${letters[oi]}</span>${o}</div>`).join('')}
+      <div class="exp" id="exp-${qi}">💡 <strong>Explanation:</strong> ${q.explanation}</div>
+    </div>`;
+  });
+  html += `<div style="text-align:center;margin-top:16px"><button class="act-btn green" onclick="submitQuiz()">✅ Submit Quiz</button></div>`;
+  document.getElementById('quizOutput').innerHTML = html;
+}
+
+window.selectOpt = (el, qi, selected, correct) => {
+  const q = document.getElementById('qq-' + qi);
+  if (q.querySelector('.correct')) return;
+  const opts = q.querySelectorAll('.opt');
+  opts[correct].classList.add('correct');
+  if (selected === correct) quizCorrect++;
+  else el.classList.add('wrong');
+  document.getElementById('exp-' + qi).classList.add('on');
+};
+
+window.submitQuiz = async () => {
+  const answered = document.querySelectorAll('.opt.correct').length;
+  if (answered < quizTotal) { showToast('⚠️ Answer all questions first!'); return; }
+  const pct = Math.round((quizCorrect / quizTotal) * 100);
+  if (pct > userStats.bestScore) {
+    userStats.bestScore = pct;
+    await saveStats();
+  }
+  await saveHistory('quiz', document.getElementById('quizInput').value.substring(0,60), pct);
+  renderDashboard();
+  const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '📚';
+  document.getElementById('scoreDisplay').innerHTML = `
+    <div style="font-size:3rem;text-align:center;margin-bottom:12px">${emoji}</div>
+    <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;text-align:center;color:${pct>=80?'var(--accent)':pct>=60?'var(--accent3)':'var(--danger)'}">${pct}%</div>
+    <div style="text-align:center;color:var(--muted2);margin-top:6px">${quizCorrect} out of ${quizTotal} correct</div>
+    <div style="text-align:center;margin-top:10px;font-size:0.9rem">${pct>=80?'Excellent work! You really know this topic! 🌟':pct>=60?'Good effort! Review the explanations to improve.':'Keep studying — every mistake is a lesson! 💪'}</div>`;
+  document.getElementById('quizScore').style.display = 'block';
+  document.getElementById('quizOutput').innerHTML = '';
+  showToast(`${emoji} Score: ${pct}%`);
+};
+
+// ---- TEXTBOOK LIBRARY SYSTEM ----
+const ADMIN_EMAIL = "admin@studymind.ai"; // ← Change this to your real admin email
+
+function isAdmin() {
+  return currentUser && currentUser.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
+}
+
+// Show admin panel or student app based on who logged in
+window.routeUser = function routeUser() {
+  console.log('routeUser called. Email:', currentUser?.email, '| ADMIN_EMAIL:', ADMIN_EMAIL, '| isAdmin:', isAdmin());
+  if (isAdmin()) {
+    document.getElementById('mainApp').style.cssText = 'display:none!important';
+    document.getElementById('adminPanel').style.cssText = 'display:block!important;position:fixed;inset:0;z-index:200;overflow:hidden;background:var(--bg)';
+    document.getElementById('adminUserName').textContent = currentUser.displayName || currentUser.email.split('@')[0];
+    adminShowView('dashboard');
+    adminLoadStats();
+  } else {
+    document.getElementById('mainApp').style.cssText = 'display:block';
+    document.getElementById('adminPanel').style.cssText = 'display:none!important';
+  }
+}
+
+// ===== ADMIN FUNCTIONS =====
+
+window.adminShowView = function adminShowView(view) {
+  ['dashboard','textbooks','add'].forEach(v => {
+    document.getElementById('aPanel-' + v).style.display = v === view ? 'block' : 'none';
+    const nav = document.getElementById('aNav-' + v);
+    if (nav) nav.className = 'nav-item' + (v === view ? ' active' : '');
+  });
+  if (view === 'textbooks') adminLoadTextbookList();
+  if (view === 'add' && !editingTbId) adminResetForm();
+}
+
+async function adminLoadStats() {
+  try {
+    const snap = await getDocs(collection(db, 'textbooks'));
+    let topicCount = 0;
+    snap.forEach(d => { topicCount += (d.data().topics || []).length; });
+    document.getElementById('adminTbCount').textContent = snap.size;
+    document.getElementById('adminTopicCount').textContent = topicCount;
+  } catch(e) {}
+}
+
+async function adminLoadTextbookList() {
+  const el = document.getElementById('adminTbList');
+  el.innerHTML = '<div class="loader on" style="padding:20px"><div class="spin"></div><p>Loading...</p></div>';
+  try {
+    const snap = await getDocs(collection(db, 'textbooks'));
+    if (snap.empty) {
+      el.innerHTML = '<div class="card"><p style="color:var(--muted2)">No textbooks yet. Add one!</p></div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(d => {
+      const tb = d.data();
+      html += `<div class="tb-card">
+        <div class="tb-icon">${tb.icon || '📚'}</div>
+        <div class="tb-info">
+          <h3>${tb.title}</h3>
+          <p>${tb.subject || ''} · ${(tb.topics||[]).length} topics</p>
+        </div>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="act-btn blue" style="padding:7px 14px;font-size:0.8rem" onclick="adminEditTextbook('${d.id}')">✏️ Edit</button>
+          <button class="act-btn" style="background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);padding:7px 14px;font-size:0.8rem" onclick="adminConfirmDelete('${d.id}','${tb.title.replace(/'/g,"\\'")}')">🗑️</button>
+        </div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<div class="card"><p style="color:var(--danger)">⚠️ ${e.message}</p></div>`;
+  }
+}
+
+let editingTbId = null;
+let adminTopicCount = 0;
+
+function adminResetForm() {
+  editingTbId = null;
+  adminTopicCount = 0;
+  document.getElementById('addTbHeading').textContent = '➕ Add New Textbook';
+  document.getElementById('tbTitle').value = '';
+  document.getElementById('tbSubject').value = '';
+  document.getElementById('tbIcon').value = '';
+  document.getElementById('tbDesc').value = '';
+  document.getElementById('adminTopicsContainer').innerHTML = '';
+  document.getElementById('deleteTbBtn').style.display = 'none';
+  adminAddTopicField();
+}
+
+window.adminAddTopicField = () => {
+  adminTopicCount++;
+  const idx = adminTopicCount;
+  const div = document.createElement('div');
+  div.className = 'topic-entry';
+  div.id = `ate-${idx}`;
+  div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--accent2)">TOPIC ${idx}</span>
+      <span style="font-size:0.75rem;color:var(--danger);cursor:pointer" onclick="document.getElementById('ate-${idx}').remove()">✕ Remove</span>
+    </div>
+    <input type="text" placeholder="Topic name e.g. Introduction to Algebra" id="atn-${idx}" style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.88rem;outline:none;margin-bottom:8px;display:block">
+    <input type="text" placeholder="YouTube link for this topic (optional)" id="aty-${idx}" style="width:100%;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.85rem;outline:none;margin-bottom:8px;display:block">
+    <textarea placeholder="Type the full textbook content for this topic here. Students will read this exactly as you write it." id="atc-${idx}" style="width:100%;min-height:130px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:0.88rem;outline:none;resize:vertical;line-height:1.65;display:block;margin-bottom:8px"></textarea>
+    <div style="display:flex;align-items:center;gap:10px">
+      <label style="font-size:0.78rem;font-weight:600;color:var(--muted2);cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:8px 12px">
+        📎 Upload File (PDF/TXT)
+        <input type="file" accept=".txt,.pdf" style="display:none" onchange="adminHandleTopicFile(this, ${idx})">
+      </label>
+      <span id="atf-${idx}" style="font-size:0.78rem;color:var(--muted2)"></span>
+    </div>`;
+  document.getElementById('adminTopicsContainer').appendChild(div);
+};
+
+window.adminHandleTopicFile = async (input, idx) => {
+  const f = input.files[0];
+  if (!f) return;
+  const statusEl = document.getElementById('atf-' + idx);
+  const contentEl = document.getElementById('atc-' + idx);
+  statusEl.textContent = '⏳ Reading file...';
+  try {
+    if (f.type === 'text/plain') {
+      const reader = new FileReader();
+      reader.onload = async e => {
+        const rawText = e.target.result;
+        statusEl.textContent = '🧠 AI organizing content...';
+        try {
+          const organized = await callGemini(`You are organizing textbook content. Clean up and organize the following text into clear paragraphs suitable for a student textbook. Preserve all information, fix formatting, remove page numbers or headers that don't make sense. Return only the clean organized text, no JSON, no markdown.
+
+${rawText.substring(0,4000)}`);
+          contentEl.value = organized.trim();
+          statusEl.textContent = '✅ ' + f.name + ' loaded & organized';
+        } catch(e) {
+          contentEl.value = rawText;
+          statusEl.textContent = '✅ ' + f.name + ' loaded';
+        }
+      };
+      reader.readAsText(f);
+    } else {
+      // PDF — just note it, read as text best effort
+      statusEl.textContent = '📄 ' + f.name + ' — type content manually for PDF files or use TXT';
+    }
+  } catch(e) {
+    statusEl.textContent = '⚠️ Could not read file';
+  }
+};
+
+window.adminSaveTextbook = async () => {
+  const title = document.getElementById('tbTitle').value.trim();
+  const subject = document.getElementById('tbSubject').value.trim();
+  const icon = document.getElementById('tbIcon').value.trim() || '📚';
+  const desc = document.getElementById('tbDesc').value.trim();
+  if (!title) { showToast('⚠️ Enter a textbook title!'); return; }
+  if (!subject) { showToast('⚠️ Enter a subject/level!'); return; }
+
+  const topics = [];
+  document.querySelectorAll('[id^="ate-"]').forEach(entry => {
+    const idNum = entry.id.split('-')[1];
+    const nameEl = document.getElementById('atn-' + idNum);
+    const contentEl = document.getElementById('atc-' + idNum);
+    const ytEl = document.getElementById('aty-' + idNum);
+    if (nameEl && nameEl.value.trim()) {
+      topics.push({
+        name: nameEl.value.trim(),
+        content: contentEl ? contentEl.value.trim() : '',
+        youtube: ytEl ? ytEl.value.trim() : ''
+      });
+    }
+  });
+
+  if (!topics.length) { showToast('⚠️ Add at least one topic!'); return; }
+
+  try {
+    const data = { title, subject, icon, desc, topics, updatedAt: serverTimestamp() };
+    if (editingTbId) {
+      const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      await updateDoc(doc(db, 'textbooks', editingTbId), data);
+      showToast('✅ Textbook updated!');
+    } else {
+      data.createdAt = serverTimestamp();
+      data.createdBy = currentUser.uid;
+      await addDoc(collection(db, 'textbooks'), data);
+      showToast('✅ Textbook saved!');
+    }
+    editingTbId = null;
+    adminShowView('textbooks');
+    adminLoadStats();
+  } catch(e) {
+    showToast('⚠️ Error: ' + e.message);
+  }
+};
+
+window.adminEditTextbook = async (tbId) => {
+  try {
+    const snap = await getDoc(doc(db, 'textbooks', tbId));
+    if (!snap.exists()) { showToast('Not found'); return; }
+    const tb = snap.data();
+    editingTbId = tbId;
+    adminTopicCount = 0;
+    document.getElementById('addTbHeading').textContent = '✏️ Edit Textbook';
+    document.getElementById('tbTitle').value = tb.title || '';
+    document.getElementById('tbSubject').value = tb.subject || '';
+    document.getElementById('tbIcon').value = tb.icon || '';
+    document.getElementById('tbDesc').value = tb.desc || '';
+    document.getElementById('adminTopicsContainer').innerHTML = '';
+    document.getElementById('deleteTbBtn').style.display = 'inline-flex';
+    adminShowView('add');
+    (tb.topics || []).forEach(t => {
+      adminAddTopicField();
+      const idx = adminTopicCount;
+      setTimeout(() => {
+        const nameEl = document.getElementById('atn-' + idx);
+        const contentEl = document.getElementById('atc-' + idx);
+        const ytEl = document.getElementById('aty-' + idx);
+        if (nameEl) nameEl.value = t.name || '';
+        if (contentEl) contentEl.value = t.content || '';
+        if (ytEl) ytEl.value = t.youtube || '';
+      }, 50);
+    });
+  } catch(e) { showToast('⚠️ ' + e.message); }
+};
+
+window.adminConfirmDelete = async (tbId, title) => {
+  if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
+  try {
+    const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    await deleteDoc(doc(db, 'textbooks', tbId));
+    showToast('🗑️ Deleted');
+    adminLoadTextbookList();
+    adminLoadStats();
+  } catch(e) { showToast('⚠️ ' + e.message); }
+};
+
+window.adminDeleteTextbook = () => {
+  if (editingTbId) adminConfirmDelete(editingTbId, document.getElementById('tbTitle').value);
+};
+
+window.adminCancelEdit = () => {
+  editingTbId = null;
+  adminShowView('textbooks');
+};
+
+// ===== STUDENT TEXTBOOK FUNCTIONS =====
+
+let currentTextbookId = null;
+let currentTopicIndex = null;
+let currentTextbookData = null;
+
+window.loadTextbookList = async function loadTextbookList() {
+  const el = document.getElementById('textbookList');
+  if (!el) return;
+  el.innerHTML = '<div class="loader on" style="padding:30px"><div class="spin"></div><p>Loading textbooks...</p></div>';
+  try {
+    const snap = await getDocs(collection(db, 'textbooks'));
+    if (snap.empty) {
+      el.innerHTML = '<div class="card"><p style="color:var(--muted2);text-align:center;padding:20px">No textbooks available yet. Check back soon! 📚</p></div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(d => {
+      const tb = d.data();
+      html += `<div class="tb-card" onclick="openTextbook('${d.id}')">
+        <div class="tb-icon">${tb.icon || '📚'}</div>
+        <div class="tb-info">
+          <h3>${tb.title}</h3>
+          <p>${tb.subject || ''}</p>
+          ${tb.desc ? `<p style="font-size:0.78rem;color:var(--muted);margin-top:3px">${tb.desc}</p>` : ''}
+        </div>
+        <div class="tb-meta">
+          <span class="tb-badge">${(tb.topics||[]).length} Topics</span>
+          <span style="font-size:0.72rem;color:var(--muted);margin-top:4px;display:block">Tap to open →</span>
+        </div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    if (e.message.includes('permission')) {
+      el.innerHTML = `<div class="card" style="border-left:3px solid var(--accent3)">
+        <p style="color:var(--accent3);font-weight:700;margin-bottom:8px">⚠️ Firebase Rules Need Updating</p>
+        <p style="font-size:0.83rem;color:var(--muted2)">Go to Firebase Console → Firestore → Rules and add:<br><br>
+        <code style="background:var(--surface3);padding:8px;border-radius:6px;display:block;margin-top:8px;font-size:0.78rem;color:var(--accent)">match /textbooks/{doc} {<br>&nbsp;&nbsp;allow read: if true;<br>&nbsp;&nbsp;allow write: if request.auth != null;<br>}</code></p>
+      </div>`;
+    } else {
+      el.innerHTML = '<div class="card"><p style="color:var(--danger)">⚠️ Could not load textbooks: ' + e.message + '</p></div>';
+    }
+  }
+}
+
+window.openTextbook = async (tbId) => {
+  try {
+    const snap = await getDoc(doc(db, 'textbooks', tbId));
+    if (!snap.exists()) { showToast('⚠️ Textbook not found'); return; }
+    currentTextbookId = tbId;
+    currentTextbookData = { id: tbId, ...snap.data() };
+    document.getElementById('tbViewTitle').textContent = currentTextbookData.title;
+    document.getElementById('tbViewSubject').textContent = currentTextbookData.subject || '';
+
+    const topics = currentTextbookData.topics || [];
+    let html = '';
+    topics.forEach((t, i) => {
+      html += `<div class="topic-item" onclick="openTopic(${i})">
+        <div class="topic-num">${i + 1}</div>
+        <div class="topic-name">${t.name}</div>
+        <div class="topic-arrow" style="color:var(--muted);font-size:0.8rem">▶</div>
+      </div>`;
+    });
+    if (!html) html = '<div class="card"><p style="color:var(--muted2)">No topics yet.</p></div>';
+    document.getElementById('topicList').innerHTML = html;
+    libGo('topics');
+  } catch(e) {
+    showToast('⚠️ ' + e.message);
+  }
+};
+
+window.openTopic = (idx) => {
+  if (!currentTextbookData) return;
+  const topic = currentTextbookData.topics[idx];
+  if (!topic) return;
+  currentTopicIndex = idx;
+
+  document.getElementById('readerTopicTitle').textContent = topic.name;
+  document.getElementById('aiTeachOutput').innerHTML = '';
+  document.getElementById('aiTeachLoader').style.display = 'none';
+  document.getElementById('quizTopicWrap').style.display = 'none';
+  document.getElementById('aiTeachBtn').disabled = false;
+
+  // Render content with clickable words
+  const content = topic.content || 'No content added for this topic yet.';
+  const rendered = content.split(/\n+/).map(para => {
+    if (!para.trim()) return '';
+    const words = para.split(' ').map(word => {
+      const clean = word.replace(/[^a-zA-Z]/g, '');
+      if (clean.length > 4) {
+        return `<span class="tb-word" onclick="explainWord('${clean.replace(/'/g,"\'")}',event)">${word}</span>`;
+      }
+      return word;
+    }).join(' ');
+    return `<p>${words}</p>`;
+  }).join('');
+  document.getElementById('readerContent').innerHTML = rendered;
+
+  // YouTube
+  const ytEl = document.getElementById('readerYT');
+  if (topic.youtube) {
+    ytEl.innerHTML = `<a class="yt-link" href="${topic.youtube}" target="_blank">▶ Watch on YouTube: ${topic.name}</a>`;
+  } else {
+    const q = encodeURIComponent(topic.name + ' ' + (currentTextbookData.subject || ''));
+    ytEl.innerHTML = `<a class="yt-link" href="https://www.youtube.com/results?search_query=${q}" target="_blank">▶ Search YouTube: ${topic.name}</a>`;
+  }
+
+  libGo('reader');
+};
+
+window.aiTeachTopic = async () => {
+  if (!currentTextbookData || currentTopicIndex === null) return;
+  const topic = currentTextbookData.topics[currentTopicIndex];
+  const btn = document.getElementById('aiTeachBtn');
+  btn.disabled = true;
+  document.getElementById('aiTeachLoader').style.display = 'block';
+  document.getElementById('aiTeachOutput').innerHTML = '';
+
+  try {
+    const prompt = `You are a passionate, expert teacher teaching a live class. You LOVE your subject and you make students love it too. Use the textbook content to teach this topic fully and deeply — like you are literally standing in front of students.
+
+Topic: "${topic.name}"
+Subject: "${currentTextbookData.subject || 'General'}"
+Textbook content: "${(topic.content || '').substring(0, 3000)}"
+
+Teach this topic like a real teacher would in class. Respond ONLY with valid JSON (no markdown, no backticks):
+{
+  "title": "Topic title",
+  "hook": "Open with something that grabs attention — a surprising fact, a real-world question, or a bold statement about why this topic matters. 2 sentences.",
+  "simpleExplanation": "Explain this like the student is hearing it for the first time. Use a relatable everyday analogy. Keep it warm and encouraging. 4-5 sentences.",
+  "deepDive": "Now go much deeper. Explain HOW it works, WHY it works that way, and WHAT happens if something changes. Connect all the pieces. Use concrete examples. 6-8 sentences.",
+  "sections": [
+    { "heading": "Sub-topic or key concept", "content": "Deep thorough explanation of this section. Walk through it step by step. Use examples, numbers, comparisons. 5-8 sentences." }
+  ],
+  "workedExample": "Walk through a COMPLETE worked example. Number EVERY step. Show ALL working. Explain the thinking at each step like a patient teacher. Be very detailed.",
+  "workedExample2": "Walk through a SECOND worked example that is slightly harder or a different variation. Number every step with full working shown.",
+  "visualNote": "Describe a diagram or visual the student should draw or imagine to understand this topic better. Be very specific about what to draw.",
+  "commonMistakes": ["Detailed mistake 1 with exactly why students make it and exactly how to avoid it", "Detailed mistake 2 with fix", "Detailed mistake 3 with fix"],
+  "teacherTip": "A special insider tip — something a great teacher would whisper to a struggling student to make it suddenly click. 2-3 sentences.",
+  "classwork": ["Classwork Q1 — simple application", "Classwork Q2 — medium difficulty", "Classwork Q3 — harder application", "Classwork Q4 — challenge question"],
+  "classworkAnswers": ["Answer/hint for Q1", "Answer/hint for Q2", "Answer/hint for Q3", "Answer/hint for Q4"],
+  "homework": ["Homework Q1", "Homework Q2", "Homework Q3", "Homework Q4"],
+  "keyPoints": ["Key point 1 — full sentence", "Key point 2 — full sentence", "Key point 3", "Key point 4", "Key point 5"],
+  "examTip": "Specific exam strategy — exactly what examiners look for, common question styles, how to score full marks, what to write to get method marks even when stuck",
+  "summary": "Wrap up the lesson. Remind the student what they learned and why it matters. Motivate them. 3-4 sentences.",
+  "funFact": "A genuinely surprising, memorable real-world connection that makes the student think WOW"
+}
+Include 3-5 sections depending on the topic depth. Go DEEP on every section. Use examples everywhere. This is a FULL classroom lesson. Return only valid JSON.`;
+
+    const raw = await callGemini(prompt);
+    let lesson;
+    try { lesson = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch { lesson = { title: topic.name, simpleExplanation: raw.substring(0,400), sections:[], keyPoints:[], classwork:[], homework:[], examTip:'', funFact:'' }; }
+
+    // Build a rich full lesson
+    const cwAnswersShown = { shown: false };
+    let html = '';
+
+    if (lesson.hook) html += `<div class="out-section" style="border-left-color:#f59e0b;background:rgba(245,158,11,0.04)"><h4 style="color:#f59e0b">🔥 Why This Matters</h4><p style="font-size:0.95rem;line-height:1.8">${lesson.hook}</p></div>`;
+    if (lesson.simpleExplanation) html += `<div class="out-section"><h4>🟢 Let's Start Simple</h4><p style="line-height:1.85">${lesson.simpleExplanation}</p></div>`;
+    if (lesson.deepDive) html += `<div class="out-section blue"><h4>🔵 Going Deeper</h4><p style="line-height:1.85">${lesson.deepDive}</p></div>`;
+    (lesson.sections||[]).forEach(s => {
+      html += `<div class="out-section blue"><h4>📍 ${s.heading}</h4><p style="line-height:1.85">${s.content}</p></div>`;
+    });
+    if (lesson.visualNote) html += `<div class="out-section" style="border-left-color:#06b6d4"><h4 style="color:#06b6d4">🖼️ Picture This</h4><p style="line-height:1.85;font-style:italic">${lesson.visualNote}</p></div>`;
+    if (lesson.workedExample) html += `<div class="out-section gold"><h4>✏️ Worked Example 1</h4><p style="white-space:pre-line;line-height:2;font-family:monospace;font-size:0.88rem">${lesson.workedExample}</p></div>`;
+    if (lesson.workedExample2) html += `<div class="out-section gold"><h4>✏️ Worked Example 2</h4><p style="white-space:pre-line;line-height:2;font-family:monospace;font-size:0.88rem">${lesson.workedExample2}</p></div>`;
+    if (lesson.teacherTip) html += `<div class="out-section" style="border-left-color:#a78bfa;background:rgba(167,139,250,0.05)"><h4 style="color:#a78bfa">🤫 Teacher's Secret Tip</h4><p style="line-height:1.85">${lesson.teacherTip}</p></div>`;
+    if (lesson.commonMistakes?.length) html += `<div class="out-section" style="border-left-color:#ef4444"><h4 style="color:#ef4444">⚠️ Common Mistakes — Don't Fall For These</h4><ul style="line-height:2">${lesson.commonMistakes.map(m=>`<li style="margin-bottom:6px">${m}</li>`).join('')}</ul></div>`;
+    if (lesson.keyPoints?.length) html += `<div class="out-section"><h4>⚡ Key Points to Remember</h4><ul style="line-height:2">${lesson.keyPoints.map(p=>`<li style="margin-bottom:4px">✅ ${p}</li>`).join('')}</ul></div>`;
+    if (lesson.examTip) html += `<div class="out-section gold"><h4>🎯 Exam Strategy</h4><p style="line-height:1.85">${lesson.examTip}</p></div>`;
+    if (lesson.classwork?.length) {
+      const answersHtml = lesson.classworkAnswers?.length ? `<div id="cwAnswers" style="display:none;margin-top:14px;background:var(--surface3);border-radius:10px;padding:14px"><div style="font-size:0.8rem;font-weight:700;color:#10b981;margin-bottom:8px">ANSWERS / HINTS</div><ol style="padding-left:16px;line-height:2">${lesson.classworkAnswers.map(a=>`<li style="margin-bottom:4px">${a}</li>`).join('')}</ol></div>` : '';
+      html += `<div class="out-section" style="border-left-color:#10b981"><h4 style="color:#10b981">📝 Classwork</h4><ol style="padding-left:16px;line-height:2">${lesson.classwork.map(q=>`<li style="margin-bottom:8px">${q}</li>`).join('')}</ol>${answersHtml}<button class="act-btn" style="margin-top:12px;background:var(--surface3);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:7px 16px;font-size:0.82rem" onclick="const el=document.getElementById('cwAnswers');if(el){el.style.display=el.style.display==='none'?'block':'none';this.textContent=el.style.display==='block'?'Hide Answers':'Show Answers / Hints'}">Show Answers / Hints</button></div>`;
+    }
+    if (lesson.homework?.length) html += `<div class="out-section" style="border-left-color:#8b5cf6"><h4 style="color:#8b5cf6">📚 Homework</h4><ol style="padding-left:16px;line-height:2">${lesson.homework.map(q=>`<li style="margin-bottom:8px">${q}</li>`).join('')}</ol></div>`;
+    if (lesson.summary) html += `<div class="out-section" style="border-left-color:#4fffb0;background:rgba(79,255,176,0.03)"><h4 style="color:var(--accent)">🎓 Lesson Summary</h4><p style="line-height:1.85">${lesson.summary}</p></div>`;
+    if (lesson.funFact) html += `<div class="out-section" style="border-left-color:#ec4899"><h4 style="color:#ec4899">💡 Interesting Fact</h4><p style="line-height:1.85">${lesson.funFact}</p></div>`;
+
+    document.getElementById('aiTeachOutput').innerHTML = html;
+    document.getElementById('quizTopicWrap').style.display = 'block';
+    userStats.lessons++;
+    await saveStats();
+    await saveHistory('lesson', topic.name + ' — ' + currentTextbookData.title);
+    renderDashboard();
+    showToast('✅ Lesson ready!');
+  } catch(e) {
+    document.getElementById('aiTeachOutput').innerHTML = `<p style="color:var(--danger)">⚠️ ${e.message}</p>`;
+  }
+
+  document.getElementById('aiTeachLoader').style.display = 'none';
+  btn.disabled = false;
+};
+
+window.quizCurrentTopic = () => {
+  if (!currentTextbookData || currentTopicIndex === null) return;
+  const topic = currentTextbookData.topics[currentTopicIndex];
+  document.getElementById('quizInput').value = topic.name + ' — ' + currentTextbookData.subject;
+  showPanel('quiz');
+  generateQuiz();
+};
+
+// Word explanation popup
+window.explainWord = async (word, evt) => {
+  const popup = document.getElementById('wordPopup');
+  document.getElementById('popupWord').textContent = word;
+  document.getElementById('popupDef').textContent = 'Loading...';
+  popup.style.display = 'block';
+  const x = Math.min(evt.clientX, window.innerWidth - 340);
+  const y = Math.min(evt.clientY + 20, window.innerHeight - 200);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+  try {
+    const ctx = currentTextbookData ? 'in the context of ' + (currentTextbookData.subject || 'this subject') : '';
+    const def = await callGemini(`Define the word "${word}" ${ctx} in 2-3 simple sentences. Give one short example. Be student-friendly. Plain text only, no markdown.`);
+    document.getElementById('popupDef').textContent = def.trim();
+  } catch(e) {
+    document.getElementById('popupDef').textContent = 'Could not load definition right now.';
+  }
+};
+
+window.closeWordPopup = () => { document.getElementById('wordPopup').style.display = 'none'; };
+
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('wordPopup');
+  if (popup && popup.style.display === 'block' && !popup.contains(e.target) && !e.target.classList.contains('tb-word')) {
+    popup.style.display = 'none';
+  }
+  // Hide explain selection button if clicking elsewhere
+  const esb = document.getElementById('explainSelectionBtn');
+  if (esb && !esb.contains(e.target)) esb.style.display = 'none';
+});
+
+// ---- Read Aloud ----
+let speechSynth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+let currentUtterance = null;
+
+window.toggleReadAloud = () => {
+  if (!speechSynth) { showToast('⚠️ Read aloud not supported in this browser'); return; }
+  if (speechSynth.speaking) { stopReadAloud(); return; }
+  const text = document.getElementById('readerContent')?.innerText || '';
+  if (!text.trim()) { showToast('⚠️ No content to read'); return; }
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.rate = 0.92;
+  currentUtterance.pitch = 1;
+  currentUtterance.lang = 'en-US';
+  // Pick a clear voice if available
+  const voices = speechSynth.getVoices();
+  const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha'));
+  if (preferred) currentUtterance.voice = preferred;
+  currentUtterance.onend = () => {
+    document.getElementById('readAloudBtn').textContent = '🔊 Read Aloud';
+    document.getElementById('stopReadBtn').style.display = 'none';
+  };
+  speechSynth.speak(currentUtterance);
+  document.getElementById('readAloudBtn').textContent = '⏸ Pause';
+  document.getElementById('stopReadBtn').style.display = 'inline-flex';
+  showToast('🔊 Reading aloud...');
+};
+
+window.stopReadAloud = () => {
+  if (!speechSynth) return;
+  speechSynth.cancel();
+  document.getElementById('readAloudBtn').textContent = '🔊 Read Aloud';
+  document.getElementById('stopReadBtn').style.display = 'none';
+};
+
+// ---- Highlight to Explain ----
+let selectedTextForExplain = '';
+
+document.addEventListener('mouseup', (e) => {
+  // Don't trigger inside popups
+  if (e.target.closest('.word-popup') || e.target.closest('#explainSelectionBtn')) return;
+  const selection = window.getSelection();
+  const selected = selection?.toString().trim();
+  if (selected && selected.length > 3 && selected.length < 300) {
+    selectedTextForExplain = selected;
+    const esb = document.getElementById('explainSelectionBtn');
+    if (esb) {
+      const range = selection.getRangeAt(0).getBoundingClientRect();
+      esb.style.left = Math.min(range.left, window.innerWidth - 160) + 'px';
+      esb.style.top = (range.top + window.scrollY - 45) + 'px';
+      esb.style.display = 'block';
+    }
+  } else {
+    const esb = document.getElementById('explainSelectionBtn');
+    if (esb && !esb.contains(e.target)) esb.style.display = 'none';
+  }
+});
+
+// Touch support for mobile
+document.addEventListener('touchend', (e) => {
+  setTimeout(() => {
+    const selection = window.getSelection();
+    const selected = selection?.toString().trim();
+    if (selected && selected.length > 3 && selected.length < 300) {
+      selectedTextForExplain = selected;
+      const esb = document.getElementById('explainSelectionBtn');
+      if (esb) {
+        esb.style.left = '50%';
+        esb.style.transform = 'translateX(-50%)';
+        esb.style.top = (window.scrollY + 100) + 'px';
+        esb.style.display = 'block';
+      }
+    }
+  }, 100);
+});
+
+window.explainSelection = async () => {
+  const text = selectedTextForExplain;
+  document.getElementById('explainSelectionBtn').style.display = 'none';
+  if (!text) return;
+
+  const popup = document.getElementById('wordPopup');
+  document.getElementById('popupWord').textContent = text.length > 60 ? text.substring(0,60)+'...' : text;
+  document.getElementById('popupDef').innerHTML = '<span style="color:var(--muted2);font-size:0.8rem">AI is explaining...</span>';
+  popup.style.display = 'block';
+  popup.style.left = '50%';
+  popup.style.top = (window.scrollY + 120) + 'px';
+  popup.style.transform = 'translateX(-50%)';
+  popup.style.maxWidth = '380px';
+
+  try {
+    const ctx = currentTextbookData ? `in the context of ${currentTextbookData.subject || 'this subject'}` : '';
+    const def = await callGemini(`A student selected this text from their textbook ${ctx}: "${text}"\n\nExplain this clearly and simply in 3-4 sentences. Use an example if helpful. Be warm and encouraging like a great teacher. Plain text only.`);
+    document.getElementById('popupDef').textContent = def.trim();
+  } catch(e) {
+    document.getElementById('popupDef').textContent = 'Could not explain right now. Try again.';
+  }
+};
+
+// Library view navigation
+window.libGo = function libGo(view) {
+  ['list','topics','reader'].forEach(v => {
+    const el = document.getElementById('lib-view-' + v);
+    if (el) el.style.display = v === view ? 'block' : 'none';
+  });
+}
+
+window.libBack = (to) => {
+  libGo(to);
+  if (to === 'list') { currentTextbookId = null; currentTextbookData = null; }
+  if (to === 'topics') { currentTopicIndex = null; }
+};
+
+window.loadLibSubject = async (subject) => {
+  showPanel('library');
+};
+
+// ---- History ----
+async function renderHistory() {
+  const items = await loadHistory();
+  const el = document.getElementById('historyList');
+  if (!items.length) { el.innerHTML = '<div class="card"><p style="color:var(--muted2);font-size:0.88rem">No history yet. Start studying! 🎯</p></div>'; return; }
+  el.innerHTML = items.map(i => `
+    <div class="history-item">
+      <div>
+        <div style="font-size:0.9rem;font-weight:500">${i.title || 'Study session'}</div>
+        <div class="hi-meta">${formatDate(i.createdAt)}${i.score ? ' · Score: ' + i.score + '%' : ''}</div>
+      </div>
+      <span class="hi-type ${i.type}">${i.type}</span>
+    </div>`).join('');
+}
+
+// ---- Toast ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 3000);
+}
+window.showToast = showToast;
+</script>
+</body>
+</html>
